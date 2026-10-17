@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import { TopBar, Header, Footer, FloatingActions } from './components/Chrome'
 import Thanjavur from './pages/Thanjavur'
+import ThankYou from './pages/ThankYou'
 import { sectionIdFor, scrollToSection } from './lib/sections'
 
 // After a route change: scroll to the section named in the path (/thanjavur/contact), else to the top.
@@ -37,6 +38,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/thanjavur" replace />} />
+          <Route path="/thankyou" element={<ThankYou />} />
           <Route path="/thanjavur/*" element={<Thanjavur {...shared} />} />
           <Route path="*" element={<Navigate to="/thanjavur" replace />} />
         </Routes>

@@ -35,10 +35,13 @@ function useActiveNav() {
     if (onService) return
     const update = (fromScroll) => {
       let current = null
+      let found = false
       for (const id of SPY_IDS) {
         const el = document.getElementById(id)
+        if (el) found = true
         if (el && el.getBoundingClientRect().top <= 220) current = id
       }
+      if (!found) return setActive(null)
       // the booking band sits between Gallery and Contact and has no menu item of its own
       const next = current === 'book' ? null : current ?? 'home'
       setActive(next)

@@ -29,6 +29,12 @@ for (const p of Object.values(pages)) {
   fs.writeFileSync(path.join(dir, 'index.html'), h)
 }
 
+// thank-you page: own title, kept out of search results
+let ty = template.replace(/<title>.*?<\/title>/s, '<title>Thank You | AVM Smiles Thanjavur</title>')
+ty = ty.replace('<meta name="robots" content="index, follow" />', '<meta name="robots" content="noindex, nofollow" />')
+fs.mkdirSync(path.join(dist, 'thankyou'), { recursive: true })
+fs.writeFileSync(path.join(dist, 'thankyou', 'index.html'), ty)
+
 // the landing page (and its section URLs) keep the homepage meta data from index.html
 for (const dir of ['', 'about', 'services', 'gallery', 'contact']) {
   fs.mkdirSync(path.join(dist, 'thanjavur', dir), { recursive: true })

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Icon, Btn } from './ui'
 import Select from './Select'
 import { clinic, services } from '../content/thanjavur'
@@ -14,7 +15,7 @@ const field =
 export default function BookingForm({ id, treatment, setTreatment }) {
   const [form, setForm] = useState({ name: '', phone: '', date: '' })
   const [errors, setErrors] = useState({})
-  const [done, setDone] = useState(false)
+  const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
@@ -45,24 +46,12 @@ export default function BookingForm({ id, treatment, setTreatment }) {
       })
       const data = await res.json()
       if (!data.success) throw new Error(data.message || 'Submission failed')
-      setForm({ name: '', phone: '', date: '' })
-      setDone(true)
+      navigate('/thankyou', { state: { name: form.name } })
     } catch {
       setErrors({ form: 'Something went wrong. Please try again or call us directly.' })
     } finally {
       setBusy(false)
     }
-  }
-
-  if (done) {
-    return (
-      <div role="status" className="rounded-3xl bg-white p-8 text-center shadow-[0_18px_48px_-16px_rgba(40,36,89,.35)]">
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-600"><Icon name="CircleCheck" size={32} /></span>
-        <h3 className="mt-4 text-xl font-semibold text-brand-900">Request received</h3>
-        <p className="mt-2 text-sm text-muted">Thank you. Our team will contact you shortly to confirm your appointment.</p>
-        <button onClick={() => setDone(false)} className="mt-5 cursor-pointer text-sm font-semibold text-brand-600 hover:underline">Book another</button>
-      </div>
-    )
   }
 
   return (
