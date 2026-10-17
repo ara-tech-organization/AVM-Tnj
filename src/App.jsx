@@ -4,16 +4,18 @@ import { TopBar, Header, Footer, FloatingActions } from './components/Chrome'
 import Landing from './pages/Landing'
 import ServicePage from './pages/ServicePage'
 
-// Scroll to the #hash target after a route change, otherwise to the top.
+// After a route change: scroll to the requested section (passed in router state, so the URL stays
+// clean with no #hash), otherwise to the top.
 function ScrollManager() {
-  const { pathname, hash } = useLocation()
+  const { pathname, state } = useLocation()
+  const target = state?.scrollTo
   useEffect(() => {
-    if (hash) {
-      const t = setTimeout(() => document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' }), 60)
+    if (target) {
+      const t = setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 80)
       return () => clearTimeout(t)
     }
     window.scrollTo(0, 0)
-  }, [pathname, hash])
+  }, [pathname, target])
   return null
 }
 

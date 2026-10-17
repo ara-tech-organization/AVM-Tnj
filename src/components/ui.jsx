@@ -1,5 +1,5 @@
 ﻿import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import {
   Activity,
   Anchor,
@@ -195,8 +195,32 @@ export function Photo({ src, alt, label, className = '', icon = 'Image' }) {
   )
 }
 
-// Internal paths use the router (no full reload); anchors, tel:, mailto: and external links stay plain.
-export function A({ href = '', children, ...p }) {
-  if (href.startsWith('/')) return <Link to={href} {...p}>{children}</Link>
-  return <a href={href} {...p}>{children}</a>
+function scrollToId(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+}
+
+// Internal paths use the router (no full reload). Section anchors ("#book", "/thanjavur#contact")
+// scroll smoothly without writing a #hash into the address bar; tel:, mailto: and external links stay plain.
+export function A({ href = '', children, onClick, ...p }) {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const norm = (s) => s.replace(/\/$/, '') || '/'
+
+  const m = href.match(/^(\/[^#]*)?#(.+)$/)
+  if (m) {
+    const path = m[1]
+    const id = m[2]
+    const go = (e) => {
+      onClick?.(e)
+      if (e.defaultPrevented) return
+      e.preventDefault()
+      const here = norm(pathname.replace(new RegExp(`^${base}`), ''))
+      if (!path || norm(path) === here) scrollToId(id)
+      else navigate(path, { state: { scrollTo: id } })
+    }
+    return <a href={path ? base + href : href} onClick={go} {...p}>{children}</a>
+  }
+  if (href.startsWith('/')) return <Link to={href} onClick={onClick} {...p}>{children}</Link>
+  return <a href={href} onClick={onClick} {...p}>{children}</a>
 }
