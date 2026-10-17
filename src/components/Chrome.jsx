@@ -1,4 +1,6 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router'
+import { sectionIdFor, syncUrl } from '../lib/sections'
 import { asset } from '../lib/asset'
 import { Icon, Btn, A } from './ui'
 import { clinic, nav, services } from '../content/thanjavur'
@@ -19,7 +21,50 @@ export function TopBar() {
   )
 }
 
+const SPY_IDS = ['home', 'about', 'services', 'gallery', 'book', 'contact']
+const NAV_ID = (n) => n.href.split('/').filter(Boolean)[1] || 'home'
+
+// Which nav item is active: scroll-spy on the landing page, "Services" on a service page.
+function useActiveNav() {
+  const { pathname } = useLocation()
+  // a service page is any /thanjavur/<slug> that is not one of the landing sections
+  const onService = /\/thanjavur\/[^/]+/.test(pathname) && !sectionIdFor(pathname.slice(pathname.indexOf('/thanjavur')))
+  const [active, setActive] = useState('home')
+
+  useEffect(() => {
+    if (onService) return
+    const update = (fromScroll) => {
+      let current = null
+      for (const id of SPY_IDS) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= 220) current = id
+      }
+      // the booking band sits between Gallery and Contact and has no menu item of its own
+      const next = current === 'book' ? null : current ?? 'home'
+      setActive(next)
+      // keep the address bar in step with the section on screen (only while the user scrolls)
+      if (fromScroll === true && next) syncUrl(next)
+    }
+    const onScroll = () => update(true)
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', update)
+    }
+  }, [onService, pathname])
+
+  return onService ? 'services' : active
+}
+
+const navLink = (on) =>
+  `relative px-4 py-2 text-sm font-medium transition-colors duration-200 after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:origin-left after:rounded-full after:bg-accent after:transition-transform after:duration-300 after:ease-out hover:text-brand-600 hover:after:scale-x-100 ${
+    on ? 'text-brand-600 after:scale-x-100' : 'text-ink after:scale-x-0'
+  }`
+
 export function Header() {
+  const activeNav = useActiveNav()
   const [scrolled, setScrolled] = useState(false)
   const [hidden, setHidden] = useState(false)
   const [open, setOpen] = useState(false)
@@ -55,7 +100,7 @@ export function Header() {
           {nav.map((n) =>
             n.dropdown ? (
               <div key={n.label} className="relative group">
-                <A href={n.href} className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-ink hover:text-brand-600 transition-colors">
+                <A href={n.href} aria-current={activeNav === NAV_ID(n) ? 'true' : undefined} className={`flex items-center gap-1 ${navLink(activeNav === NAV_ID(n))}`}>
                   {n.label} <Icon name="ChevronDown" size={16} className="transition-transform duration-200 group-hover:rotate-180" />
                 </A>
                 <div className="invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-200 absolute left-0 top-full pt-2">
@@ -69,7 +114,7 @@ export function Header() {
                 </div>
               </div>
             ) : (
-              <A key={n.label} href={n.href} className="px-4 py-2 text-sm font-medium text-ink hover:text-brand-600 transition-colors">
+              <A key={n.label} href={n.href} aria-current={activeNav === NAV_ID(n) ? 'true' : undefined} className={navLink(activeNav === NAV_ID(n))}>
                 {n.label}
               </A>
             ),

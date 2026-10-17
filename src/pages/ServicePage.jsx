@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, useParams } from 'react-router'
+import { Navigate } from 'react-router'
 import { Icon, Btn, Reveal, A } from '../components/ui'
 import BookingForm from '../components/BookingForm'
 import { clinic, services } from '../content/thanjavur'
@@ -207,8 +207,7 @@ function Section({ s }) {
   )
 }
 
-export default function ServicePage({ treatment, setTreatment }) {
-  const { slug } = useParams()
+export default function ServicePage({ treatment, setTreatment, slug }) {
   const page = pages[slug]
   const svc = services.find((s) => s.slug === slug)
 
@@ -224,8 +223,6 @@ export default function ServicePage({ treatment, setTreatment }) {
     return { intro, cta, main }
   }, [page])
 
-  if (slug === 'gallery') return <Navigate to="/thanjavur#gallery" replace />
-  if (slug === 'contact-us') return <Navigate to="/thanjavur#contact" replace />
   if (!page || !svc) return <Navigate to="/thanjavur" replace />
   const { intro, cta, main } = parts
 

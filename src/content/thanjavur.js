@@ -18,10 +18,10 @@ export const clinic = {
 
 export const nav = [
   { label: 'Home', href: '/thanjavur' },
-  { label: 'About Us', href: '/thanjavur#about' },
-  { label: 'Services', href: '/thanjavur#services', dropdown: true },
-  { label: 'Smile Gallery', href: '/thanjavur#gallery' },
-  { label: 'Contact Us', href: '/thanjavur#contact' },
+  { label: 'About Us', href: '/thanjavur/about' },
+  { label: 'Services', href: '/thanjavur/services', dropdown: true },
+  { label: 'Smile Gallery', href: '/thanjavur/gallery' },
+  { label: 'Contact Us', href: '/thanjavur/contact' },
 ]
 
 export const heroChips = [

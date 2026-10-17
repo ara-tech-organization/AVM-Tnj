@@ -29,7 +29,9 @@ for (const p of Object.values(pages)) {
   fs.writeFileSync(path.join(dir, 'index.html'), h)
 }
 
-// the landing page keeps the homepage meta data from index.html
-fs.mkdirSync(path.join(dist, 'thanjavur'), { recursive: true })
-fs.writeFileSync(path.join(dist, 'thanjavur', 'index.html'), template)
+// the landing page (and its section URLs) keep the homepage meta data from index.html
+for (const dir of ['', 'about', 'services', 'gallery', 'contact']) {
+  fs.mkdirSync(path.join(dist, 'thanjavur', dir), { recursive: true })
+  fs.writeFileSync(path.join(dist, 'thanjavur', dir, 'index.html'), template)
+}
 console.log(`prerender: ${Object.keys(pages).length} service pages + landing`)

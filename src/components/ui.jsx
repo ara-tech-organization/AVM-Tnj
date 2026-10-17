@@ -1,5 +1,6 @@
-﻿import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
+import { sectionIdFor, scrollToSection, syncUrl } from '../lib/sections'
 import {
   Activity,
   Anchor,
@@ -195,32 +196,29 @@ export function Photo({ src, alt, label, className = '', icon = 'Image' }) {
   )
 }
 
-function scrollToId(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-}
-
-// Internal paths use the router (no full reload). Section anchors ("#book", "/thanjavur#contact")
-// scroll smoothly without writing a #hash into the address bar; tel:, mailto: and external links stay plain.
+// Internal paths use the router (no full reload). Links to a landing section ("/thanjavur/contact") scroll
+// smoothly when the section is already on screen and update the URL; "#book" style anchors only scroll.
+// tel:, mailto: and external links stay plain.
 export function A({ href = '', children, onClick, ...p }) {
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-  const norm = (s) => s.replace(/\/$/, '') || '/'
-
-  const m = href.match(/^(\/[^#]*)?#(.+)$/)
-  if (m) {
-    const path = m[1]
-    const id = m[2]
+  if (href.startsWith('#')) {
     const go = (e) => {
       onClick?.(e)
       if (e.defaultPrevented) return
       e.preventDefault()
-      const here = norm(pathname.replace(new RegExp(`^${base}`), ''))
-      if (!path || norm(path) === here) scrollToId(id)
-      else navigate(path, { state: { scrollTo: id } })
+      scrollToSection(href.slice(1))
     }
-    return <a href={path ? base + href : href} onClick={go} {...p}>{children}</a>
+    return <a href={href} onClick={go} {...p}>{children}</a>
   }
-  if (href.startsWith('/')) return <Link to={href} onClick={onClick} {...p}>{children}</Link>
+  if (href.startsWith('/')) {
+    const id = sectionIdFor(href)
+    const go = (e) => {
+      onClick?.(e)
+      if (e.defaultPrevented || !id || !document.getElementById(id)) return
+      e.preventDefault()
+      scrollToSection(id)
+      syncUrl(id)
+    }
+    return <Link to={href} onClick={go} {...p}>{children}</Link>
+  }
   return <a href={href} onClick={onClick} {...p}>{children}</a>
 }

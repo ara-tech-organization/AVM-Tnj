@@ -1,21 +1,26 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import { TopBar, Header, Footer, FloatingActions } from './components/Chrome'
-import Landing from './pages/Landing'
-import ServicePage from './pages/ServicePage'
+import Thanjavur from './pages/Thanjavur'
+import { sectionIdFor, scrollToSection } from './lib/sections'
 
-// After a route change: scroll to the requested section (passed in router state, so the URL stays
-// clean with no #hash), otherwise to the top.
+// After a route change: scroll to the section named in the path (/thanjavur/contact), else to the top.
 function ScrollManager() {
-  const { pathname, state } = useLocation()
-  const target = state?.scrollTo
+  const { pathname } = useLocation()
   useEffect(() => {
-    if (target) {
-      const t = setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 80)
-      return () => clearTimeout(t)
+    const id = sectionIdFor(pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), ''))
+    if (id && id !== 'home') {
+      // second pass: lazy images and fonts can shift the layout after the first scroll
+      const settle = () => {
+        const top = document.getElementById(id)?.getBoundingClientRect().top
+        if (top !== undefined && Math.abs(top - 88) > 16) scrollToSection(id)
+      }
+      const t1 = setTimeout(() => scrollToSection(id), 80)
+      const t2 = setTimeout(settle, 1100)
+      return () => { clearTimeout(t1); clearTimeout(t2) }
     }
     window.scrollTo(0, 0)
-  }, [pathname, target])
+  }, [pathname])
   return null
 }
 
@@ -32,8 +37,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/thanjavur" replace />} />
-          <Route path="/thanjavur" element={<Landing {...shared} />} />
-          <Route path="/thanjavur/:slug" element={<ServicePage {...shared} />} />
+          <Route path="/thanjavur/*" element={<Thanjavur {...shared} />} />
           <Route path="*" element={<Navigate to="/thanjavur" replace />} />
         </Routes>
       </main>
